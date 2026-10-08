@@ -37,12 +37,10 @@ def haversine_np(lat1, lon1, lat2, lon2):
 
 def process_neighbors(target_df, current_df, min_dist, max_dist, include_target):
     """Xử lý quét và tính toán khoảng cách Neighbor."""
-    # Làm sạch dữ liệu tọa độ
     for df in (target_df, current_df):
         df['Lon'] = df['Lon'].apply(clean_coord)
         df['Lat'] = df['Lat'].apply(clean_coord)
 
-    # Gộp dữ liệu theo tùy chọn
     if include_target:
         all_sites_df = pd.concat([target_df, current_df], ignore_index=True)
     else:
@@ -53,11 +51,9 @@ def process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
 
     neighbor_list = []
     
-    # Duyệt từng trạm Site_Cell_list để quét khoảng cách
     for idx, target in target_df.iterrows():
         distances = haversine_np(target['Lat'], target['Lon'], all_lats, all_lons)
         
-        # Điều kiện lọc: nằm trong khoảng cách quy định và không trùng Site
         valid_mask = (distances >= min_dist) & (distances <= max_dist) & (all_sites_df['Site'] != target['Site'])
         neighbors = all_sites_df[valid_mask].copy()
 
@@ -96,7 +92,8 @@ with col_sample1:
                 label="📄 Tải mẫu File Site_Cell_list (.csv)",
                 data=f.read(),
                 file_name="Site_Cell_List_Sample.csv",
-                mime="text/csv"
+                mime="text/csv",
+                key="btn_sample_target"
             )
 
 with col_sample2:
@@ -107,7 +104,8 @@ with col_sample2:
                 label="📄 Tải mẫu File RIMS (.csv)",
                 data=f.read(),
                 file_name="RIM_Sample.csv",
-                mime="text/csv"
+                mime="text/csv",
+                key="btn_sample_rim"
             )
 
 st.divider()
@@ -129,7 +127,7 @@ with col1:
 with col2:
     data_file = st.file_uploader("Chọn File RIMS (.csv)", type=["csv"])
 
-# Nút xử lý
+# Nút thực hiện tính toán
 if st.button("🚀 Tiến hành quét Neighbor", type="primary"):
     if target_file is None or data_file is None:
         st.error("Vui lòng tải lên đầy đủ cả 2 file `.csv` trước khi thực hiện!")
@@ -138,38 +136,42 @@ if st.button("🚀 Tiến hành quét Neighbor", type="primary"):
     else:
         try:
             with st.spinner("Đang xử lý dữ liệu và quét khoảng cách..."):
-                # Đọc file CSV
                 target_df = pd.read_csv(target_file)
                 current_df = pd.read_csv(data_file)
 
-                # Kiểm tra định dạng cột bắt buộc
                 required_cols = {'Site', 'Lat', 'Lon'}
                 if not required_cols.issubset(target_df.columns) or not required_cols.issubset(current_df.columns):
                     st.error(f"Cả 2 file phải chứa các cột bắt buộc: {required_cols}")
                 else:
-                    # Thực hiện tính toán
-                    result_df = process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
-
+                    # Lưu kết quả tính toán vào session_state
+                    st.session_state['result_df'] = process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
+                    st.session_state['total_targets'] = len(target_df)
+                    st.session_state['min_dist'] = min_dist
+                    st.session_state['max_dist'] = max_dist
                     st.success("Xử lý hoàn tất!")
-
-                    # Thống kê tổng quan
-                    st.subheader("📊 Thống kê kết quả")
-                    m1, m2, m3 = st.columns(3)
-                    m1.metric("Tổng trạm Target (Site_Cell_list)", len(target_df))
-                    m2.metric("Số cặp Neighbor tìm thấy", len(result_df))
-                    m3.metric("Số trạm Target có Neighbor", result_df['Target Site'].nunique() if not result_df.empty else 0)
-
-                    # Hiển thị dữ liệu
-                    st.subheader("📋 Bảng kết quả")
-                    st.dataframe(result_df, use_container_width=True)
-
-                    # Export ra CSV
-                    csv_data = result_df.to_csv(index=False).encode('utf-8')
-                    st.download_button(
-                        label="📥 Tải xuống kết quả (.csv)",
-                        data=csv_data,
-                        file_name=f"NeighborList_{min_dist}m_to_{max_dist}m.csv",
-                        mime="text/csv"
-                    )
         except Exception as e:
             st.error(f"Có lỗi xảy ra trong quá trình xử lý: {str(e)}")
+
+# --- HIỂN THỊ KẾT QUẢ VÀ NÚT TẢI VỀ (Lấy từ session_state) ---
+if 'result_df' in st.session_state:
+    result_df = st.session_state['result_df']
+    total_targets = st.session_state['total_targets']
+    
+    st.subheader("📊 Thống kê kết quả")
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Tổng trạm Target (Site_Cell_list)", total_targets)
+    m2.metric("Số cặp Neighbor tìm thấy", len(result_df))
+    m3.metric("Số trạm Target có Neighbor", result_df['Target Site'].nunique() if not result_df.empty else 0)
+
+    st.subheader("📋 Bảng kết quả")
+    st.dataframe(result_df, use_container_width=True)
+
+    # Nút Download không làm mất kết quả
+    csv_data = result_df.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Tải xuống kết quả (.csv)",
+        data=csv_data,
+        file_name=f"NeighborList_{st.session_state['min_dist']}m_to_{st.session_state['max_dist']}m.csv",
+        mime="text/csv",
+        key="btn_download_result"
+    )
