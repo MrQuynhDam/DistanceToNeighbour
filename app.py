@@ -93,7 +93,7 @@ def process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
 
 # --- GIAO DIỆN STREAMLIT ---
 
-st.title("📡 Công Cụ Tìm Trạm Neighbor")
+st.title("📡 Distance to Neighbors")
 st.write("Tải lên file dữ liệu `.csv` để tìm neighbours số lượng và phạm vi rộng.")
 
 # Tải file Sample trực tiếp từ repo GitHub
