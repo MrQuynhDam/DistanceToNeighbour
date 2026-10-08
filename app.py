@@ -6,7 +6,7 @@ import os
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Công Cụ Tìm Trạm Neighbor",
+    page_title="Distance to Neighbors",
     page_icon="📡",
     layout="wide"
 )
@@ -94,7 +94,7 @@ def process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
 # --- GIAO DIỆN STREAMLIT ---
 
 st.title("📡 Công Cụ Tìm Trạm Neighbor")
-st.write("Tải lên file dữ liệu `.csv` để quét khoảng cách giữa các trạm.")
+st.write("Tải lên file dữ liệu `.csv` để tìm neighbours số lượng và phạm vi rộng.")
 
 # Tải file Sample trực tiếp từ repo GitHub
 st.markdown("### 📥 Tải file dữ liệu mẫu")
@@ -144,7 +144,7 @@ with col2:
     data_file = st.file_uploader("Chọn File RIMS (.csv)", type=["csv"])
 
 # Nút thực hiện tính toán
-if st.button("🚀 Tiến hành quét Neighbor", type="primary"):
+if st.button("🚀 Calculate...", type="primary"):
     if target_file is None or data_file is None:
         st.error("Vui lòng tải lên đầy đủ cả 2 file `.csv` trước khi thực hiện!")
     elif min_dist >= max_dist:
