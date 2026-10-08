@@ -11,15 +11,20 @@ st.set_page_config(
     layout="wide"
 )
 # Thêm đoạn này ngay dưới st.set_page_config(...) hoặc ở đầu ứng dụng
-st.markdown("""
-    <style>
-    /* Ẩn dòng chữ chú thích về dung lượng và định dạng file dưới nút uploader */
-    div[data-testid="stFileUploaderDropzoneInstructions"] {
-        display: none;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
+# Đổi văn bản "200MB per file" thành "10MB per file" bằng JavaScript & CSS
+st.components.v1.html("""
+    <script>
+    const observer = new MutationObserver(() => {
+        const instructions = window.parent.document.querySelectorAll('[data-testid="stFileUploaderDropzoneInstructions"] small');
+        instructions.forEach(el => {
+            if (el.innerText.includes('200MB')) {
+                el.innerText = el.innerText.replace('200MB', '10MB');
+            }
+        });
+    });
+    observer.observe(window.parent.document.body, { childList: true, subtree: true });
+    </script>
+""", height=0)
 # --- CÁC HÀM XỬ LÝ DỮ LIỆU & TÍNH TOÁN ---
 
 def clean_coord(coord):
