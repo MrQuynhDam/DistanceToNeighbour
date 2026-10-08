@@ -10,21 +10,23 @@ st.set_page_config(
     page_icon="📡",
     layout="wide"
 )
-# Thêm đoạn này ngay dưới st.set_page_config(...) hoặc ở đầu ứng dụng
 # Đổi văn bản "200MB per file" thành "10MB per file" bằng JavaScript & CSS
-st.components.v1.html("""
-    <script>
-    const observer = new MutationObserver(() => {
-        const instructions = window.parent.document.querySelectorAll('[data-testid="stFileUploaderDropzoneInstructions"] small');
-        instructions.forEach(el => {
-            if (el.innerText.includes('200MB')) {
-                el.innerText = el.innerText.replace('200MB', '10MB');
-            }
-        });
-    });
-    observer.observe(window.parent.document.body, { childList: true, subtree: true });
-    </script>
-""", height=0)
+# Thay đổi text hiển thị từ "200MB per file" thành "10MB per file" bằng CSS thuần
+st.markdown("""
+    <style>
+    /* Ẩn chữ 200MB gốc */
+    div[data-testid="stFileUploaderDropzoneInstructions"] small {
+        font-size: 0px !important;
+    }
+    /* Chèn chữ 10MB per file • CSV mới vào */
+    div[data-testid="stFileUploaderDropzoneInstructions"] small::after {
+        content: "10MB per file • CSV";
+        font-size: 14px !important;
+        visibility: visible !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # --- CÁC HÀM XỬ LÝ DỮ LIỆU & TÍNH TOÁN ---
 
 def clean_coord(coord):
