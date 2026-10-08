@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
+import re
+import os
 
 # Cấu hình trang Streamlit
 st.set_page_config(
@@ -12,10 +14,20 @@ st.set_page_config(
 # --- CÁC HÀM XỬ LÝ DỮ LIỆU & TÍNH TOÁN ---
 
 def clean_coord(coord):
-    """Làm sạch dữ liệu tọa độ dạng chuỗi hoặc số."""
-    if isinstance(coord, str):
-        return float(coord.replace('E', '').replace('N', '').strip())
-    return float(coord)
+    """
+    Làm sạch tọa độ: Giữ lại số, dấu chấm (.) và dấu trừ (-).
+    Xử lý tốt tọa độ bị định dạng Text, khoảng trắng, hậu tố E/N/W/S...
+    """
+    if pd.isna(coord):
+        return np.nan
+    if isinstance(coord, (int, float)):
+        return float(coord)
+    
+    coord_str = str(coord).strip()
+    match = re.search(r'[-+]?\d*\.?\d+', coord_str)
+    if match:
+        return float(match.group())
+    return np.nan
 
 def haversine_np(lat1, lon1, lat2, lon2):
     """Tính khoảng cách Haversine vector hóa bằng NumPy (tốc độ cao)."""
@@ -41,7 +53,7 @@ def process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
 
     neighbor_list = []
     
-    # Duyệt từng trạm Target để quét khoảng cách
+    # Duyệt từng trạm Site_Cell_list để quét khoảng cách
     for idx, target in target_df.iterrows():
         distances = haversine_np(target['Lat'], target['Lon'], all_lats, all_lons)
         
@@ -72,22 +84,50 @@ def process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
 st.title("📡 Công Cụ Tìm Trạm Neighbor")
 st.write("Tải lên file dữ liệu `.csv` để quét khoảng cách giữa các trạm.")
 
+# Tải file Sample trực tiếp từ repo GitHub
+st.markdown("### 📥 Tải file dữ liệu mẫu")
+col_sample1, col_sample2 = st.columns(2)
+
+with col_sample1:
+    sample_target_path = "Site_Cell_List_Sample.csv"
+    if os.path.exists(sample_target_path):
+        with open(sample_target_path, "rb") as f:
+            st.download_button(
+                label="📄 Tải mẫu File Site_Cell_list (.csv)",
+                data=f.read(),
+                file_name="Site_Cell_List_Sample.csv",
+                mime="text/csv"
+            )
+
+with col_sample2:
+    sample_rim_path = "RIM_Sample.csv"
+    if os.path.exists(sample_rim_path):
+        with open(sample_rim_path, "rb") as f:
+            st.download_button(
+                label="📄 Tải mẫu File RIMS (.csv)",
+                data=f.read(),
+                file_name="RIM_Sample.csv",
+                mime="text/csv"
+            )
+
+st.divider()
+
 # Thanh bên (Sidebar) cấu hình tham số
 st.sidebar.header("⚙️ Cấu hình thông số")
 
 min_dist = st.sidebar.number_input("Khoảng cách tối thiểu (m):", min_value=0, value=0, step=50)
 max_dist = st.sidebar.number_input("Khoảng cách tối đa (m):", min_value=1, value=5000, step=100)
 
-include_target = st.sidebar.checkbox("Tìm Neighbor cả trong các site của File Target", value=True)
+include_target = st.sidebar.checkbox("Tìm Neighbor cả trong các site của File Site_Cell_list", value=True)
 
 # Tải file CSV lên
 col1, col2 = st.columns(2)
 
 with col1:
-    target_file = st.file_uploader("Chọn File Target (.csv)", type=["csv"])
+    target_file = st.file_uploader("Chọn File Site_Cell_list (.csv)", type=["csv"])
 
 with col2:
-    data_file = st.file_uploader("Chọn File Data/Current (.csv)", type=["csv"])
+    data_file = st.file_uploader("Chọn File RIMS (.csv)", type=["csv"])
 
 # Nút xử lý
 if st.button("🚀 Tiến hành quét Neighbor", type="primary"):
@@ -105,7 +145,7 @@ if st.button("🚀 Tiến hành quét Neighbor", type="primary"):
                 # Kiểm tra định dạng cột bắt buộc
                 required_cols = {'Site', 'Lat', 'Lon'}
                 if not required_cols.issubset(target_df.columns) or not required_cols.issubset(current_df.columns):
-                    st.error(f"File đầu vào phải chứa các cột bắt buộc: {required_cols}")
+                    st.error(f"Cả 2 file phải chứa các cột bắt buộc: {required_cols}")
                 else:
                     # Thực hiện tính toán
                     result_df = process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
@@ -115,7 +155,7 @@ if st.button("🚀 Tiến hành quét Neighbor", type="primary"):
                     # Thống kê tổng quan
                     st.subheader("📊 Thống kê kết quả")
                     m1, m2, m3 = st.columns(3)
-                    m1.metric("Tổng trạm Target", len(target_df))
+                    m1.metric("Tổng trạm Target (Site_Cell_list)", len(target_df))
                     m2.metric("Số cặp Neighbor tìm thấy", len(result_df))
                     m3.metric("Số trạm Target có Neighbor", result_df['Target Site'].nunique() if not result_df.empty else 0)
 
