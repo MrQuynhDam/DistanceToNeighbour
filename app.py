@@ -10,6 +10,15 @@ st.set_page_config(
     page_icon="📡",
     layout="wide"
 )
+# Thêm đoạn này ngay dưới st.set_page_config(...) hoặc ở đầu ứng dụng
+st.markdown("""
+    <style>
+    /* Ẩn dòng chữ chú thích về dung lượng và định dạng file dưới nút uploader */
+    div[data-testid="stFileUploaderDropzoneInstructions"] {
+        display: none;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # --- CÁC HÀM XỬ LÝ DỮ LIỆU & TÍNH TOÁN ---
 
