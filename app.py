@@ -6,7 +6,7 @@ import os
 
 # Cấu hình trang Streamlit
 st.set_page_config(
-    page_title="Distance to Neighbors",
+    page_title="Distance to Neighbours",
     page_icon="📡",
     layout="wide"
 )
@@ -93,7 +93,7 @@ def process_neighbors(target_df, current_df, min_dist, max_dist, include_target)
 
 # --- GIAO DIỆN STREAMLIT ---
 
-st.title("📡 Distance to Neighbors")
+st.title("📡 Distance to Neighbours")
 st.write("Tải lên file dữ liệu `.csv` để tìm neighbours số lượng và phạm vi rộng.")
 
 # Tải file Sample trực tiếp từ repo GitHub
