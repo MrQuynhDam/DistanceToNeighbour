@@ -10,19 +10,19 @@ st.set_page_config(
     page_icon="📡",
     layout="wide"
 )
-# Đổi văn bản "200MB per file" thành "10MB per file" bằng JavaScript & CSS
-# Thay đổi text hiển thị từ "200MB per file" thành "10MB per file" bằng CSS thuần
+# Đổi text hiển thị 200MB thành 10MB bằng CSS triệt để
 st.markdown("""
     <style>
-    /* Ẩn chữ 200MB gốc */
-    div[data-testid="stFileUploaderDropzoneInstructions"] small {
-        font-size: 0px !important;
+    /* 1. Ẩn chữ gốc bên trong khối hướng dẫn uploader */
+    div[data-testid="stFileUploaderDropzoneInstructions"] > * {
+        display: none !important;
     }
-    /* Chèn chữ 10MB per file • CSV mới vào */
-    div[data-testid="stFileUploaderDropzoneInstructions"] small::after {
+    
+    /* 2. Tạo nội dung chữ mới hiển thị thay thế */
+    div[data-testid="stFileUploaderDropzoneInstructions"]::after {
         content: "10MB per file • CSV";
-        font-size: 14px !important;
-        visibility: visible !important;
+        font-size: 14px;
+        color: #808495;
     }
     </style>
 """, unsafe_allow_html=True)
