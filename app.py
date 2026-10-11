@@ -206,25 +206,25 @@ st.markdown("### 📥 Tải file dữ liệu mẫu")
 col_sample1, col_sample2 = st.columns(2)
 
 with col_sample1:
-    sample_target_path = "Site_Cell_List_Sample.csv"
+    sample_target_path = "CellList_sample.csv"
     if os.path.exists(sample_target_path):
         with open(sample_target_path, "rb") as f:
             st.download_button(
-                label="📄 Tải mẫu File Site_Cell_list (.csv)",
+                label="📄 Tải mẫu File CellList_sample (.csv)",
                 data=f.read(),
-                file_name="Site_Cell_List_Sample.csv",
+                file_name="CellList_sample.csv",
                 mime="text/csv",
                 key="btn_sample_target"
             )
 
 with col_sample2:
-    sample_rim_path = "RIM_Sample.csv"
+    sample_rim_path = "ExistingCell_samle.csv"
     if os.path.exists(sample_rim_path):
         with open(sample_rim_path, "rb") as f:
             st.download_button(
-                label="📄 Tải mẫu File RIMS (.csv)",
+                label="📄 Tải mẫu File ExistingCell_samle (.csv)",
                 data=f.read(),
-                file_name="RIM_Sample.csv",
+                file_name="ExistingCell_samle.csv",
                 mime="text/csv",
                 key="btn_sample_rim"
             )
@@ -235,14 +235,14 @@ st.divider()
 st.sidebar.header("⚙️ Cấu hình thông số")
 min_dist = st.sidebar.number_input("Khoảng cách tối thiểu (m):", min_value=0, value=0, step=50)
 max_dist = st.sidebar.number_input("Khoảng cách tối đa (m):", min_value=1, value=5000, step=100)
-include_target = st.sidebar.checkbox("Tìm Neighbor cả trong File Site_Cell_list", value=True)
+include_target = st.sidebar.checkbox("Tìm Neighbor cả trong File CellList_sample", value=True)
 
 # Upload File
 col1, col2 = st.columns(2)
 with col1:
-    target_file = st.file_uploader("Chọn File Site_Cell_list (.csv)", type=["csv"])
+    target_file = st.file_uploader("Chọn File CellList_sample (.csv)", type=["csv"])
 with col2:
-    data_file = st.file_uploader("Chọn File RIMS (.csv)", type=["csv"])
+    data_file = st.file_uploader("Chọn File ExistingCell_samle (.csv)", type=["csv"])
 
 # Thực hiện tính toán
 if st.button("🚀 Calculate...", type="primary"):
@@ -263,14 +263,14 @@ if st.button("🚀 Calculate...", type="primary"):
                 current_df_raw = pd.read_csv(data_file)
 
                 # Bước 2: Kiểm tra & Làm sạch dữ liệu File 1
-                st.write("🔍 **Bước 2/4:** Kiểm tra Cellname & Tọa độ Miền Nam (File Site_Cell_list)...")
+                st.write("🔍 **Bước 2/4:** Kiểm tra Cellname & Tọa độ Miền Nam (File CellList_sample)...")
                 progress_bar.progress(35)
-                target_clean, target_invalid = inspect_and_clean_data(target_df_raw, "Site_Cell_list")
+                target_clean, target_invalid = inspect_and_clean_data(target_df_raw, "CellList_sample")
 
                 # Bước 3: Kiểm tra & Làm sạch dữ liệu File 2
-                st.write("🔍 **Bước 3/4:** Kiểm tra Cellname & Tọa độ Miền Nam (File RIMS)...")
+                st.write("🔍 **Bước 3/4:** Kiểm tra Cellname & Tọa độ Miền Nam (File ExistingCell_samle)...")
                 progress_bar.progress(60)
-                current_clean, current_invalid = inspect_and_clean_data(current_df_raw, "RIMS")
+                current_clean, current_invalid = inspect_and_clean_data(current_df_raw, "ExistingCell_samle")
 
                 all_invalid_df = pd.concat([target_invalid, current_invalid], ignore_index=True)
 
@@ -278,8 +278,8 @@ if st.button("🚀 Calculate...", type="primary"):
                     status.update(label="❌ Cấu trúc File không hợp lệ!", state="error", expanded=True)
                     st.error("File tải lên thiếu các cột bắt buộc. Vui lòng kiểm tra lại!")
                 elif target_clean.empty:
-                    status.update(label="❌ Không có dữ liệu hợp lệ trong File Site_Cell_list!", state="error", expanded=True)
-                    st.error("Tất cả các dòng trong File Site_Cell_list đều bị lỗi tọa độ hoặc thiếu Cellname!")
+                    status.update(label="❌ Không có dữ liệu hợp lệ trong File CellList_sample!", state="error", expanded=True)
+                    st.error("Tất cả các dòng trong File CellList_sample đều bị lỗi tọa độ hoặc thiếu Cellname!")
                 else:
                     # Bước 4: Tính toán khoảng cách
                     st.write("🧮 **Bước 4/4:** Đang tính toán khoảng cách Neighbor Haversine...")
