@@ -218,15 +218,15 @@ with col_sample1:
             )
 
 with col_sample2:
-    sample_rim_path = "ExistingCell_samle.csv"
-    if os.path.exists(sample_rim_path):
-        with open(sample_rim_path, "rb") as f:
+    sample_existing_path = "ExistingCell_sample.csv"
+    if os.path.exists(sample_existing_path):
+        with open(sample_existing_path, "rb") as f:
             st.download_button(
-                label="📄 Tải mẫu File ExistingCell_samle (.csv)",
+                label="📄 Tải mẫu File ExistingCell_sample (.csv)",
                 data=f.read(),
-                file_name="ExistingCell_samle.csv",
+                file_name="ExistingCell_sample.csv",
                 mime="text/csv",
-                key="btn_sample_rim"
+                key="btn_sample_existing"
             )
 
 st.divider()
@@ -242,7 +242,7 @@ col1, col2 = st.columns(2)
 with col1:
     target_file = st.file_uploader("Chọn File CellList_sample (.csv)", type=["csv"])
 with col2:
-    data_file = st.file_uploader("Chọn File ExistingCell_samle (.csv)", type=["csv"])
+    data_file = st.file_uploader("Chọn File ExistingCell_sample (.csv)", type=["csv"])
 
 # Thực hiện tính toán
 if st.button("🚀 Calculate...", type="primary"):
@@ -268,9 +268,9 @@ if st.button("🚀 Calculate...", type="primary"):
                 target_clean, target_invalid = inspect_and_clean_data(target_df_raw, "CellList_sample")
 
                 # Bước 3: Kiểm tra & Làm sạch dữ liệu File 2
-                st.write("🔍 **Bước 3/4:** Kiểm tra Cellname & Tọa độ Miền Nam (File ExistingCell_samle)...")
+                st.write("🔍 **Bước 3/4:** Kiểm tra Cellname & Tọa độ Miền Nam (File ExistingCell_sample)...")
                 progress_bar.progress(60)
-                current_clean, current_invalid = inspect_and_clean_data(current_df_raw, "ExistingCell_samle")
+                current_clean, current_invalid = inspect_and_clean_data(current_df_raw, "ExistingCell_sample")
 
                 all_invalid_df = pd.concat([target_invalid, current_invalid], ignore_index=True)
 
